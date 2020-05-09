@@ -1,6 +1,6 @@
 package ca.pringle.maze.ui;
 
-import ca.pringle.maze.Preconditions;
+import ca.pringle.maze.util.Preconditions;
 
 /**
  * rows are the y dimension, columns are the x dimension
@@ -9,7 +9,11 @@ final class PanelDimensions {
     final int rows, columns, pathWidth, borderWidth, panelWidth, panelHeight;
     final MazeDimensions mazeDimensions;
 
-    public PanelDimensions(int rows, int columns, int pathWidth, int borderWidth) {
+    public PanelDimensions(int rows,
+                           int columns,
+                           int pathWidth,
+                           int borderWidth) {
+
         this.rows = rows;
         this.columns = columns;
         this.pathWidth = pathWidth;

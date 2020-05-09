@@ -1,13 +1,14 @@
 package ca.pringle.maze.ui;
 
-import ca.pringle.maze.Preconditions;
-import ca.pringle.maze.logic.Edge;
-import ca.pringle.maze.util.Pair;
-
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.Set;
+
+import javax.swing.JPanel;
+
+import ca.pringle.maze.logic.Edge;
+import ca.pringle.maze.util.Pair;
+import ca.pringle.maze.util.Preconditions;
 
 final class MazePanel extends JPanel {
 
@@ -87,10 +88,6 @@ final class MazePanel extends JPanel {
     private void eraseEdge(final Graphics graphics,
                            final Edge edge) {
 
-        if (edge == null) {
-            return;
-        }
-
         final int cellXMin = panelDimensions.mazeDimensions.xMin + (edge.node1 % panelDimensions.columns) * panelDimensions.pathWidth;
         final int cellYMin = panelDimensions.mazeDimensions.yMin + (edge.node1 / panelDimensions.columns) * panelDimensions.pathWidth;
         final int cellXMax = cellXMin + panelDimensions.pathWidth;
@@ -103,8 +100,6 @@ final class MazePanel extends JPanel {
             graphics.drawLine(cellXMax, cellYMin + 1, cellXMax, cellYMax - 1);
         } else if (isEdgeGoingDown) {
             graphics.drawLine(cellXMin + 1, cellYMax, cellXMax - 1, cellYMax);
-        } else {
-            System.out.println("Bad point " + edge);
         }
     }
 }

@@ -1,7 +1,5 @@
 package ca.pringle.maze.util;
 
-import ca.pringle.maze.Preconditions;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +38,10 @@ public final class DisjointSet<T> {
     }
 
     // O(pathCompression) work
-    public void merge(final int key1, final int key2, T value) {
+    public void merge(final int key1,
+                      final int key2,
+                      T value) {
+
         final int keyA = pathCompress(subsets.get(key1));
         final int keyB = pathCompress(subsets.get(key2));
 
@@ -69,10 +70,11 @@ public final class DisjointSet<T> {
     }
 
     private static class Subset<T> {
-        private int pointer;
         private final List<T> values;
+        private int pointer;
 
-        public Subset(final int pointer, final List<T> values) {
+        public Subset(final int pointer,
+                      final List<T> values) {
             this.pointer = pointer;
             this.values = values;
         }

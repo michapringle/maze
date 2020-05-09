@@ -1,9 +1,9 @@
 package ca.pringle.maze.util;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.TreeMap;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;

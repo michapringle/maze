@@ -1,26 +1,25 @@
 package ca.pringle.maze.logic;
 
-import ca.pringle.maze.Preconditions;
-import ca.pringle.maze.util.DisjointSet;
-
-import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import ca.pringle.maze.util.DisjointSet;
+import ca.pringle.maze.util.Preconditions;
 
 /**
  * Creates a maze using a graph that is rows x columns in size. Each
  * node is given a number in ascending order, starting from the top
  * left corner, working down to the bottom right corner.
  * <p>
- *        c   c   c
- *        o   o   o
- *        l   l   l
+ * c   c   c
+ * o   o   o
+ * l   l   l
  * row  | 0 | 1 | 2 |
- *      |---+---+---|
+ * |---+---+---|
  * row  | 3 | 4 | 5 |
- *      |---+---+---|
+ * |---+---+---|
  * row  | 6 | 7 | 8 |
  */
 public final class MazeMaker {
@@ -43,23 +42,24 @@ public final class MazeMaker {
 
     public Set<Edge> generateUndirectedMazeEdges() {
 
-        final long start = Instant.now().toEpochMilli();
+        mazeConfig.getMazeGenerationTimer().start();
 
         //initialization O(ROWS*COLS) time
         final Edge[] edges = initializeMaze();
 
         //randomize mostPaths O(ROWS*COLS) time
-        final Edge[] randomizedEdges = randomizeEdges(edges);
+        randomizeEdges(edges);
 
         // O(ROWS*COLS*k) work, k is some constant <= 5
-        for (final Edge edge : randomizedEdges) {
+        for (final Edge edge : edges) {
             disjointSet.merge(edge.node1, edge.node2, edge);
         }
 
-        final long end = Instant.now().toEpochMilli() - start;
-        System.out.println("Maze created in " + end + " milliseconds.");
+        final Set<Edge> result = disjointSet.getCombinedSubsets();
 
-        return disjointSet.getCombinedSubsets();
+        mazeConfig.getMazeGenerationTimer().stop();
+
+        return result;
     }
 
     /**
@@ -78,19 +78,16 @@ public final class MazeMaker {
         return edges.toArray(new Edge[] {});
     }
 
-    Edge[] randomizeEdges(final Edge[] edges) {
-        final Edge[] randomizedEdges = edges.clone();
+    void randomizeEdges(final Edge[] edges) {
         final Random random = mazeConfig.getNewSeededRandom();
 
-        for (int i = 0; i < randomizedEdges.length; i++) {
-            final int rand = random.nextInt(randomizedEdges.length);
+        for (int i = 0; i < edges.length; i++) {
+            final int rand = random.nextInt(edges.length);
 
-            final Edge temp = randomizedEdges[i];
-            randomizedEdges[i] = randomizedEdges[rand];
-            randomizedEdges[rand] = temp;
+            final Edge temp = edges[i];
+            edges[i] = edges[rand];
+            edges[rand] = temp;
         }
-
-        return randomizedEdges;
     }
 
     /* A maze can never have diagonal paths.
@@ -105,24 +102,13 @@ public final class MazeMaker {
      * possible paths from C.
      */
     int[] getAdjacent(final int cellNumber) {
-        final int[] list = new int[2];
-        int size = 0;
 
-        //see if the cell is not on the very bottom
-        if (cellNumber < (mazeConfig.getRows() - 1) * mazeConfig.getColumns()) {
-            list[size] = cellNumber + mazeConfig.getColumns();
-            size = size + 1;
-        }
+        final boolean isCellBelow = cellNumber < (mazeConfig.getRows() - 1) * mazeConfig.getColumns();
+        final boolean isCellToTheRight = (cellNumber + 1) % mazeConfig.getColumns() != 0;
 
-        //see if the cell is not on the very right
-        if ((cellNumber + 1) % mazeConfig.getColumns() != 0) {
-            list[size] = cellNumber + 1;
-            size = size + 1;
-        }
-
-        final int[] returnList = new int[size];
-        System.arraycopy(list, 0, returnList, 0, size);
-
-        return returnList;
+        return isCellBelow && isCellToTheRight ? new int[] { cellNumber + mazeConfig.getColumns(), cellNumber + 1 } :
+               isCellBelow ? new int[] { cellNumber + mazeConfig.getColumns() } :
+               isCellToTheRight ? new int[] { cellNumber + 1 } :
+               new int[] {};
     }
 }

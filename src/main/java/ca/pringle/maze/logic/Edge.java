@@ -1,8 +1,8 @@
 package ca.pringle.maze.logic;
 
-import ca.pringle.maze.Preconditions;
-
 import java.util.Objects;
+
+import ca.pringle.maze.util.Preconditions;
 
 /**
  * Represents an undirected edge between two nodes on a graph
@@ -13,6 +13,7 @@ public final class Edge {
 
     public Edge(final int node1,
                 final int node2) {
+
         this.node1 = node1;
         this.node2 = node2;
 

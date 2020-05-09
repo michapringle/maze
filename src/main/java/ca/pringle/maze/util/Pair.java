@@ -1,7 +1,5 @@
 package ca.pringle.maze.util;
 
-import ca.pringle.maze.Preconditions;
-
 import java.util.Objects;
 
 public final class Pair<T1, T2> {

@@ -1,10 +1,9 @@
 package ca.pringle.maze.logic;
 
-import java.time.Instant;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import ca.pringle.maze.util.ListBackedMap;
 import ca.pringle.maze.util.Pair;
@@ -19,23 +18,20 @@ public final class PathFinder {
      * <p>
      * Runs in O(n) time
      */
-    public Pair<Integer, Integer> findLongestPath(final Set<Edge> undirectedMazeEdges) {
+    public Pair<Integer, Integer> findLongestPath(final Set<Edge> undirectedMazeEdges,
+                                                  final MazeConfig mazeConfig) {
 
-        final long start = Instant.now().toEpochMilli();
+        mazeConfig.getPathGenerationTimer().start();
 
-        // O(n)
+        // each call below takes O(n) time
         final ListBackedMap<Integer, Edge> dag1 = convertToDirectedGraph(undirectedMazeEdges);
-        // O(n)
-        final Pair<Integer, Edge> firstNode = longestPath(1, dag1.get(0).get(0), dag1);
-        // O(n)
+        final Pair<Integer, Integer> firstNode = longestPath(0, dag1);
         final ListBackedMap<Integer, Edge> dag2 = convertToDirectedGraph(undirectedMazeEdges);
-        // O(n)
-        final Pair<Integer, Edge> secondNode = longestPath(1, firstNode.right.reverseNodes(), dag2);
+        final Pair<Integer, Integer> secondNode = longestPath(firstNode.right, dag2);
 
-        final long end = Instant.now().toEpochMilli() - start;
-        System.out.println("Longest path found in " + end + " milliseconds.");
+        mazeConfig.getPathGenerationTimer().stop();
 
-        return new Pair<>(firstNode.right.node2, secondNode.right.node2);
+        return new Pair<>(firstNode.right, secondNode.right);
     }
 
     private ListBackedMap<Integer, Edge> convertToDirectedGraph(final Set<Edge> undirectedMazeEdges) {
@@ -49,25 +45,39 @@ public final class PathFinder {
         return nodeLookup;
     }
 
-    private Pair<Integer, Edge> longestPath(final int length,
-                                            final Edge edge,
-                                            final ListBackedMap<Integer, Edge> nodeLookup) {
+    /*
+     * this is much more easily understood as a recursive algorithm, but that requires
+     * setting the stack size for the jvm, and that has to be passed to the jvm when you
+     * run the jar. I want to avoid having to pass settings to the jvm to make this
+     * program work, hence this iterative approach.
+     */
+    private Pair<Integer, Integer> longestPath(final int node,
+                                               final ListBackedMap<Integer, Edge> nodeLookup) {
 
-        // follow both nodes for the edge
-        final List<Edge> followNodeEdges = nodeLookup.get(edge.node2);
+        final Stack<Pair<Integer, Integer>> stack = new Stack<>();
+        Pair<Integer, Integer> maxPair = new Pair<>(0, node);
 
-        // remove the edge that was followed so it is not followed again
-        nodeLookup.remove(edge.node1, edge);
-        nodeLookup.remove(edge.node2, edge.reverseNodes());
+        stack.push(maxPair);
 
-        if (followNodeEdges.isEmpty()) {
-            return new Pair<>(length, edge);
+        while (!stack.empty()) {
+            final Pair<Integer, Integer> topPair = stack.pop();
+
+            final List<Edge> followNodeEdges = nodeLookup.get(topPair.right);
+
+            // end condition, choose the path that is longest
+            if (followNodeEdges.isEmpty()) {
+                maxPair = topPair.left >= maxPair.left ? topPair : maxPair;
+            }
+
+            // follow each edge
+            for (final Edge edge : new LinkedList<>(followNodeEdges)) {
+                // remove visited nodes, both to and from paths
+                nodeLookup.remove(node, edge);
+                nodeLookup.remove(edge.node2, edge.reverseNodes());
+                stack.push(new Pair<>(topPair.left + 1, edge.node2));
+            }
         }
 
-        return new LinkedList<>(followNodeEdges)
-                .stream()
-                .map(e -> longestPath(length + 1, e, nodeLookup))
-                .max(Comparator.comparing(p -> p.left))
-                .orElseThrow();
+        return maxPair;
     }
 }

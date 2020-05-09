@@ -1,4 +1,4 @@
-package ca.pringle.maze;
+package ca.pringle.maze.util;
 
 public final class Preconditions {
     private Preconditions() {
@@ -10,7 +10,8 @@ public final class Preconditions {
         }
     }
 
-    public static void checkArgument(final boolean expression, final Object errorMessage) {
+    public static void checkArgument(final boolean expression,
+                                     final Object errorMessage) {
         if (!expression) {
             throw new IllegalArgumentException(String.valueOf(errorMessage));
         }

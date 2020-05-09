@@ -1,10 +1,10 @@
 package ca.pringle.maze.logic;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,18 +18,18 @@ final class MazeMakerTest {
         final MazeConfig mazeConfig = new MazeConfig(4, 3, 0);
         final MazeMaker sut = new MazeMaker(mazeConfig);
 
-        assertArrayEquals(new int[]{3, 1}, sut.getAdjacent(0));
-        assertArrayEquals(new int[]{4, 2}, sut.getAdjacent(1));
-        assertArrayEquals(new int[]{5}, sut.getAdjacent(2));
-        assertArrayEquals(new int[]{6, 4}, sut.getAdjacent(3));
-        assertArrayEquals(new int[]{7, 5}, sut.getAdjacent(4));
-        assertArrayEquals(new int[]{8}, sut.getAdjacent(5));
-        assertArrayEquals(new int[]{9, 7}, sut.getAdjacent(6));
-        assertArrayEquals(new int[]{10, 8}, sut.getAdjacent(7));
-        assertArrayEquals(new int[]{11}, sut.getAdjacent(8));
-        assertArrayEquals(new int[]{10}, sut.getAdjacent(9));
-        assertArrayEquals(new int[]{11}, sut.getAdjacent(10));
-        assertArrayEquals(new int[]{}, sut.getAdjacent(11));
+        assertArrayEquals(new int[] { 3, 1 }, sut.getAdjacent(0));
+        assertArrayEquals(new int[] { 4, 2 }, sut.getAdjacent(1));
+        assertArrayEquals(new int[] { 5 }, sut.getAdjacent(2));
+        assertArrayEquals(new int[] { 6, 4 }, sut.getAdjacent(3));
+        assertArrayEquals(new int[] { 7, 5 }, sut.getAdjacent(4));
+        assertArrayEquals(new int[] { 8 }, sut.getAdjacent(5));
+        assertArrayEquals(new int[] { 9, 7 }, sut.getAdjacent(6));
+        assertArrayEquals(new int[] { 10, 8 }, sut.getAdjacent(7));
+        assertArrayEquals(new int[] { 11 }, sut.getAdjacent(8));
+        assertArrayEquals(new int[] { 10 }, sut.getAdjacent(9));
+        assertArrayEquals(new int[] { 11 }, sut.getAdjacent(10));
+        assertArrayEquals(new int[] {}, sut.getAdjacent(11));
     }
 
     @Test
@@ -65,7 +65,9 @@ final class MazeMakerTest {
         final MazeMaker sut = new MazeMaker(mazeConfig);
 
         final Edge[] edges = sut.initializeMaze();
-        final Edge[] actual = sut.randomizeEdges(edges);
+        final Edge[] actual = edges.clone();
+
+        sut.randomizeEdges(actual);
 
         // verify the edges are not altered
         assertEquals(17, edges.length);
