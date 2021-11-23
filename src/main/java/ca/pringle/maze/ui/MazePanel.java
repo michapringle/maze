@@ -1,44 +1,48 @@
 package ca.pringle.maze.ui;
 
 import ca.pringle.maze.logic.Edge;
-import ca.pringle.maze.util.Pair;
+import ca.pringle.maze.logic.Path;
+import ca.pringle.maze.logic.SpecializedGraph;
 
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.List;
 
-import static ca.pringle.maze.util.Preconditions.check;
+import static ca.pringle.maze.util.Checks.check;
 
 final class MazePanel extends JPanel {
 
-    private List<Edge> edges;
-    private Pair<Integer, Integer> startAndEndNodes;
-    private List<Integer> solution;
+    private SpecializedGraph dag;
+    private Path startAndEndNodes;
+    private int[] solution;
     private PanelDimensions panelDimensions;
 
-    public void update(final List<Edge> edges,
-                       final Pair<Integer, Integer> startAndEndNodes,
+    public void update(final SpecializedGraph dag,
+                       final Path startAndEndNodes,
                        final PanelDimensions panelDimensions) {
 
-        this.edges = check(edges).notNull().get();
-        this.startAndEndNodes = check(startAndEndNodes).notNull().get();
-        this.panelDimensions = check(panelDimensions).notNull().get();
+        this.dag = check(dag).isNotNull();
+        this.startAndEndNodes = check(startAndEndNodes).isNotNull();
+        this.panelDimensions = check(panelDimensions).isNotNull();
     }
 
-    public void addSolution(final List<Integer> solution) {
-        this.solution = check(solution).notNull().get();
+    public void addSolution(final int[] solution) {
+        this.solution = check(solution).isNotNull();
     }
 
     public boolean hasSolution() {
-        return !solution.isEmpty();
+        return solution.length != 0;
+    }
+
+    public PanelDimensions getPanelDimensions() {
+        return panelDimensions;
     }
 
     @Override
     public void paint(final Graphics graphics) {
 
         // nothing to paint yet
-        if (edges == null) {
+        if (dag == null) {
             return;
         }
 
@@ -56,23 +60,26 @@ final class MazePanel extends JPanel {
         paintFullGrid(graphics);
 
         graphics.setColor(Color.white);
-        for (final Edge edge : edges) {
-            paintErasedEdge(graphics, edge);
+        for (int fromNode = 0; fromNode < dag.numberOfNodes(); fromNode++) {
+            for (final int toNode : dag.get(fromNode).toArray()) {
+                final Edge edge = new Edge(fromNode, toNode);
+                paintErasedEdge(graphics, edge);
+            }
         }
     }
 
     private void paintSolution(final Graphics graphics) {
 
-        if (solution.isEmpty()) {
+        if (solution.length == 0) {
             return;
         }
 
         graphics.setColor(Color.pink);
-        Integer lastNode = solution.get(0);
+        int lastNode = solution[0];
 
-        for (int i = 1; i < solution.size(); i++) {
+        for (int i = 1; i < solution.length; i++) {
 
-            final Integer currentNode = solution.get(i);
+            final int currentNode = solution[i];
             addSolutionNode(graphics, lastNode, currentNode);
             lastNode = currentNode;
         }
@@ -81,20 +88,20 @@ final class MazePanel extends JPanel {
     private void paintStartAndEndNodes(final Graphics graphics) {
 
         graphics.setColor(Color.red);
-        addSquareNode(graphics, startAndEndNodes.left);
-        addSquareNode(graphics, startAndEndNodes.right);
+        addSquareNode(graphics, startAndEndNodes.fromNode);
+        addSquareNode(graphics, startAndEndNodes.toNode);
         graphics.setColor(Color.black);
     }
 
     private void addSquareNode(final Graphics graphics,
-                               final Integer node) {
+                               final int node) {
 
         graphics.fillRect(calculateLeft(node), calculateTop(node), calculateWidth(), calculateHeight());
     }
 
     private void addSolutionNode(final Graphics graphics,
-                                 final Integer lastNode,
-                                 final Integer currentNode) {
+                                 final int lastNode,
+                                 final int currentNode) {
 
         if (lastNode - currentNode == -1) {
             graphics.fillRect(

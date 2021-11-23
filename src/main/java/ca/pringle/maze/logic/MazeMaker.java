@@ -1,44 +1,41 @@
 package ca.pringle.maze.logic;
 
-import ca.pringle.maze.util.DisjointSet;
-
-import java.util.List;
 import java.util.Random;
 
-import static ca.pringle.maze.util.Preconditions.check;
+import static ca.pringle.maze.util.Checks.check;
 
 /**
  * Creates a maze using a graph that is rows x columns in size. Each
  * node is given a number in ascending order, starting from the top
  * left corner, working down to the bottom right corner.
  * <p>
- *        c   c   c
- *        o   o   o
- *        l   l   l
+ * c   c   c
+ * o   o   o
+ * l   l   l
  * row  | 0 | 1 | 2 |
- *      |---+---+---|
+ * |---+---+---|
  * row  | 3 | 4 | 5 |
- *      |---+---+---|
+ * |---+---+---|
  * row  | 6 | 7 | 8 |
  */
 public final class MazeMaker {
 
     private final MazeConfig mazeConfig;
-    private final DisjointSet<Edge> disjointSet;
+    private final DisjointEdgeSet disjointSet;
 
     public MazeMaker(final MazeConfig mazeConfig,
-                     final DisjointSet<Edge> disjointSet) {
+                     final DisjointEdgeSet disjointSet) {
 
-        this.mazeConfig = check(mazeConfig).notNull().get();
-        this.disjointSet = check(disjointSet).notNull().get();
+        this.mazeConfig = check(mazeConfig).isNotNull();
+        this.disjointSet = check(disjointSet).isNotNull();
     }
 
     public MazeMaker(final MazeConfig mazeConfig) {
 
-        this(mazeConfig, new DisjointSet<>(mazeConfig.getRowsTimesColumns()));
+        this(mazeConfig, new DisjointEdgeSet(mazeConfig.getRowsTimesColumns()));
     }
 
-    public List<Edge> generateUndirectedMazeEdges() {
+    public SpecializedGraph generateDag() {
 
         mazeConfig.getMazeGenerationTimer().start();
 
@@ -53,7 +50,7 @@ public final class MazeMaker {
             disjointSet.merge(edge.node1, edge.node2, edge);
         }
 
-        final List<Edge> result = disjointSet.getCombinedSubsets();
+        final SpecializedGraph result = disjointSet.getEdgesAsDag();
 
         mazeConfig.getMazeGenerationTimer().stop();
 
