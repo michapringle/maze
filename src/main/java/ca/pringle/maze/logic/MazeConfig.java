@@ -3,7 +3,7 @@ package ca.pringle.maze.logic;
 import java.time.Instant;
 import java.util.Random;
 
-import static ca.pringle.maze.util.Preconditions.check;
+import static ca.pringle.maze.util.Checks.check;
 
 public final class MazeConfig {
     public static final String ROWS_MESSAGE = "rows must be an integer in the range 2..9999";
@@ -20,8 +20,8 @@ public final class MazeConfig {
                       final int columns,
                       final long seed) {
 
-        this.rows = check(rows).argument(rows >= 2 && rows <= 9999, ROWS_MESSAGE).get();
-        this.columns = check(columns).argument(columns >= 2 && columns <= 9999, COLUMNS_MESSAGE).get();
+        this.rows = check(rows).isTrue(rows >= 2 && rows <= 9999, ROWS_MESSAGE);
+        this.columns = check(columns).isTrue(columns >= 2 && columns <= 9999, COLUMNS_MESSAGE);
         this.seed = seed;
         this.mazeGenerationTimer = new Timer();
         this.pathGenerationTimer = new Timer();

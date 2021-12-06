@@ -1,12 +1,14 @@
 package ca.pringle.maze.ui;
 
-import static ca.pringle.maze.util.Preconditions.check;
+import java.awt.Dimension;
+
+import static ca.pringle.maze.util.Checks.check;
 
 /**
  * rows are the y dimension, columns are the x dimension
  */
 final class PanelDimensions {
-    final int rows, columns, pathWidth, borderWidth, panelWidth, panelHeight;
+    final int rows, columns, pathWidth, panelWidth, panelHeight;
     final MazeDimensions mazeDimensions;
 
     public PanelDimensions(final int rows,
@@ -14,10 +16,10 @@ final class PanelDimensions {
                            final int pathWidth,
                            final int borderWidth) {
 
-        this.rows = check(rows).argument(rows > 0, "Rows must >= 0").get();
-        this.columns = check(columns).argument(columns > 0, "Columns must >= 0").get();
-        this.pathWidth = check(pathWidth).argument(pathWidth > 0, "Path Width must >= 0").get();
-        this.borderWidth = check(borderWidth).argument(borderWidth > 0, "Border Width must >= 0").get();
+        this.rows = check(rows).isTrue(rows > 0, "Rows must >= 0");
+        this.columns = check(columns).isTrue(columns > 0, "Columns must >= 0");
+        this.pathWidth = check(pathWidth).isTrue(pathWidth > 0, "Path Width must >= 0");
+        check(borderWidth).isTrue(borderWidth > 0, "Border Width must >= 0");
 
         this.panelWidth = 2 * borderWidth + columns * pathWidth;
         this.panelHeight = 2 * borderWidth + rows * pathWidth;
@@ -28,6 +30,11 @@ final class PanelDimensions {
                 borderWidth,
                 borderWidth + rows * pathWidth
         );
+    }
+
+    public Dimension toDimension() {
+
+        return new Dimension(panelWidth, panelHeight);
     }
 
     public static class MazeDimensions {

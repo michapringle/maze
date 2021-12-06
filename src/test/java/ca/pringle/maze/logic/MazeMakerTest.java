@@ -1,10 +1,14 @@
 package ca.pringle.maze.logic;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-
+import static ca.pringle.maze.TestData.MAZE_2X2_S0;
+import static ca.pringle.maze.TestData.MAZE_3X4_S0;
+import static ca.pringle.maze.TestData.MAZE_6X6_S0;
+import static ca.pringle.maze.TestData.MAZE_6X6_S1;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -82,14 +86,23 @@ final class MazeMakerTest {
     }
 
     @Test
-    void generateUndirectedMazeEdgesShouldCreateMazeWithoutAlteringEdges() {
-        final MazeConfig mazeConfig = new MazeConfig(4, 3, 0);
-        final MazeMaker sut = new MazeMaker(mazeConfig);
+    void generateDagShouldCreateValidDag() {
 
-        final List<Edge> edges = sut.generateUndirectedMazeEdges();
-
-        for (final Edge edge : edges) {
-            assertTrue(edge.node1 == edge.node2 - 1 || edge.node1 == edge.node2 - 3);
+        {
+            final SpecializedGraph actual = new MazeMaker(MAZE_2X2_S0.config()).generateDag();
+            assertEquals(MAZE_2X2_S0.graph(), actual);
+        }
+        {
+            final SpecializedGraph actual = new MazeMaker(MAZE_3X4_S0.config()).generateDag();
+            assertEquals(MAZE_3X4_S0.graph(), actual);
+        }
+        {
+            final SpecializedGraph actual = new MazeMaker(MAZE_6X6_S0.config()).generateDag();
+            assertEquals(MAZE_6X6_S0.graph(), actual);
+        }
+        {
+            final SpecializedGraph actual = new MazeMaker(MAZE_6X6_S1.config()).generateDag();
+            assertEquals(MAZE_6X6_S1.graph(), actual);
         }
     }
 }

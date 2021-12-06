@@ -2,7 +2,7 @@ package ca.pringle.maze.logic;
 
 import java.util.Objects;
 
-import static ca.pringle.maze.util.Preconditions.check;
+import static ca.pringle.maze.util.Checks.check;
 
 /**
  * Represents an undirected edge between two nodes on a graph
@@ -14,8 +14,8 @@ public final class Edge {
     public Edge(final int node1,
                 final int node2) {
 
-        this.node1 = check(node1).argument(node1 >= 0, "Node 1 must >= 0").get();
-        this.node2 = check(node2).argument(node2 >= 0, "Node 2 must >= 0").get();
+        this.node1 = check(node1).isGreaterThan(-1, "Node 1 must >= 0");
+        this.node2 = check(node2).isGreaterThan(-1, "Node 2 must >= 0");
     }
 
     @Override

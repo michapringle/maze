@@ -1,38 +1,25 @@
 package ca.pringle.maze.logic;
 
-import ca.pringle.maze.util.ListBackedMap;
-import ca.pringle.maze.util.Pair;
-
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
-import java.util.List;
 
 public final class PathFinder {
 
-    public List<Integer> findSolution(final List<Edge> undirectedMazeEdges,
-                                      final Integer startNode,
-                                      final Integer endNode,
-                                      final MazeConfig mazeConfig) {
+    public int[] findSolution(final SpecializedGraph graph,
+                              final int startNode,
+                              final int endNode,
+                              final MazeConfig mazeConfig) {
 
         mazeConfig.getSolutionGenerationTimer().start();
 
-        final ListBackedMap<Integer, Integer> nodeLookup = convertToDirectedGraph(undirectedMazeEdges);
+        final SpecializedGraph graphCopy = SpecializedGraph.copy(graph);
         final Deque<Integer> stack = new ArrayDeque<>();
 
         stack.push(startNode);
         while (true) {
-            final Integer node = stack.peek();
+            final int node = stack.peek();
 
-            final List<Integer> followNodeEdges = nodeLookup.get(node);
-
-            // end condition
-            if (followNodeEdges.contains(endNode)) {
-                stack.push(endNode);
-                final List<Integer> solution = Arrays.asList(stack.toArray(new Integer[0]));
-                mazeConfig.getSolutionGenerationTimer().stop();
-                return solution;
-            }
+            final SpecializedGraph.SpecializedList followNodeEdges = graphCopy.get(node);
 
             // backtrack condition
             if (followNodeEdges.isEmpty()) {
@@ -40,10 +27,18 @@ public final class PathFinder {
                 continue;
             }
 
+            // end condition
+            if (followNodeEdges.contains(endNode)) {
+                stack.push(endNode);
+                int[] solution = stack.stream().mapToInt(i -> i).toArray();
+                mazeConfig.getSolutionGenerationTimer().stop();
+                return solution;
+            }
+
             // follow next edge
-            final Integer toNode = followNodeEdges.get(0);
-            nodeLookup.remove(node, toNode);
-            nodeLookup.remove(toNode, node);
+            final int toNode = followNodeEdges.get(0);
+            graphCopy.remove(node, toNode);
+            graphCopy.remove(toNode, node);
             stack.push(toNode);
         }
     }
@@ -56,32 +51,18 @@ public final class PathFinder {
      * <p>
      * Runs in O(n) time
      */
-    public Pair<Integer, Integer> findLongestPath(final List<Edge> undirectedMazeEdges,
-                                                  final MazeConfig mazeConfig) {
+    public Path findLongestPath(final SpecializedGraph graph,
+                                final MazeConfig mazeConfig) {
 
         mazeConfig.getPathGenerationTimer().start();
 
         // each call below takes O(n) time
-        final ListBackedMap<Integer, Integer> dag1 = convertToDirectedGraph(undirectedMazeEdges);
-        final Integer firstNode = longestPath(0, dag1);
-        final ListBackedMap<Integer, Integer> dag2 = convertToDirectedGraph(undirectedMazeEdges);
-        final Integer secondNode = longestPath(firstNode, dag2);
+        final int firstNode = longestPath(graph, 0);
+        final int secondNode = longestPath(graph, firstNode);
 
         mazeConfig.getPathGenerationTimer().stop();
 
-        return new Pair<>(firstNode, secondNode);
-    }
-
-    private ListBackedMap<Integer, Integer> convertToDirectedGraph(final List<Edge> undirectedMazeEdges) {
-
-        final ListBackedMap<Integer, Integer> nodeLookup = new ListBackedMap<>();
-
-        for (final Edge edge : undirectedMazeEdges) {
-            nodeLookup.put(edge.node1, edge.node2);
-            nodeLookup.put(edge.node2, edge.node1);
-        }
-
-        return nodeLookup;
+        return new Path(firstNode, secondNode);
     }
 
     /*
@@ -90,32 +71,33 @@ public final class PathFinder {
      * run the jar. I want to avoid having to pass settings to the jvm to make this
      * program work, hence this iterative approach.
      */
-    private Integer longestPath(final int startNode,
-                                final ListBackedMap<Integer, Integer> nodeLookup) {
+    private int longestPath(final SpecializedGraph graph,
+                            final int startNode) {
 
-        final Deque<Pair<Integer, Integer>> stack = new ArrayDeque<>();
-        Pair<Integer, Integer> maxPair = new Pair<>(0, startNode);
+        final SpecializedGraph graphCopy = SpecializedGraph.copy(graph);
+        final Deque<Path> stack = new ArrayDeque<>();
+        Path maxPair = new Path(0, startNode);
 
         stack.push(maxPair);
 
         while (!stack.isEmpty()) {
-            final Pair<Integer, Integer> topPair = stack.pop();
+            final Path topPair = stack.pop();
 
-            final List<Integer> followNodeEdges = nodeLookup.get(topPair.right);
+            final SpecializedGraph.SpecializedList followNodeEdges = graphCopy.get(topPair.toNode);
 
             // end condition, choose the path that is longest
             if (followNodeEdges.isEmpty()) {
-                maxPair = topPair.left >= maxPair.left ? topPair : maxPair;
+                maxPair = topPair.fromNode >= maxPair.fromNode ? topPair : maxPair;
             }
 
             // follow each edge
-            for (final Integer toNode : followNodeEdges.toArray(new Integer[0])) {
-                nodeLookup.remove(topPair.right, toNode);
-                nodeLookup.remove(toNode, topPair.right);
-                stack.push(new Pair<>(topPair.left + 1, toNode));
+            for (final int toNode : followNodeEdges.toArray()) {
+                graphCopy.remove(topPair.toNode, toNode);
+                graphCopy.remove(toNode, topPair.toNode);
+                stack.push(new Path(topPair.fromNode + 1, toNode));
             }
         }
 
-        return maxPair.right;
+        return maxPair.toNode;
     }
 }
