@@ -5,51 +5,93 @@ import java.awt.Dimension;
 import static ca.pringle.maze.util.Checks.check;
 
 /**
- * rows are the y dimension, columns are the x dimension
+ * Panel dimensions stores the dimensions of the maze panel, and the dimensions of the maze.
+ * <p/>
+ * The panel dimensions are (0,0) to (getPanelWidth(), getPanelHeight())
+ * <p/>
+ * The maze dimensions are (getMazeXMin(), getMazeYMin()) to (getMazeXMax, getMazeYMax())
+ * <p/>
+ * The difference between the panel and maze dimensions is the empty border space surrounding the maze.
  */
 final class PanelDimensions {
-    final int rows, columns, pathWidth, panelWidth, panelHeight;
-    final MazeDimensions mazeDimensions;
 
-    public PanelDimensions(final int rows,
-                           final int columns,
-                           final int pathWidth,
-                           final int borderWidth) {
+    /*
+     * Required conditions
+     * NODE_INSET > 0
+     * NODE_WIDTH > 2*(NODE_INSET+1)
+     * BORDER_WIDTH >= 0
+     */
+    public static final int NODE_WIDTH = 15;
+    public static final int NODE_INSET = 2;
+    private static final int BORDER_WIDTH = 15;
 
-        this.rows = check(rows).isTrue(rows > 0, "Rows must >= 0");
-        this.columns = check(columns).isTrue(columns > 0, "Columns must >= 0");
-        this.pathWidth = check(pathWidth).isTrue(pathWidth > 0, "Path Width must >= 0");
-        check(borderWidth).isTrue(borderWidth > 0, "Border Width must >= 0");
+    private final int mazeXMax;
+    private final int mazeYMax;
 
-        this.panelWidth = 2 * borderWidth + columns * pathWidth;
-        this.panelHeight = 2 * borderWidth + rows * pathWidth;
+    private PanelDimensions(final int mazeXMax,
+                            final int mazeYMax) {
 
-        this.mazeDimensions = new MazeDimensions(
-                borderWidth,
-                borderWidth + columns * pathWidth,
-                borderWidth,
-                borderWidth + rows * pathWidth
-        );
+        this.mazeXMax = mazeXMax;
+        this.mazeYMax = mazeYMax;
     }
 
-    public Dimension toDimension() {
+    /**
+     * @param rows    - determine the y dimension of the maze (vertical)
+     * @param columns - determine the x dimension of the maze (horizontal)
+     */
+    public static PanelDimensions calculateMazeDimensionsFrom(final int rows,
+                                                              final int columns) {
 
-        return new Dimension(panelWidth, panelHeight);
+        check(rows).isTrue(rows > 0, "Rows must >= 0");
+        check(columns).isTrue(columns > 0, "Columns must >= 0");
+
+        return new PanelDimensions(BORDER_WIDTH + columns * NODE_WIDTH, BORDER_WIDTH + rows * NODE_WIDTH);
     }
 
-    public static class MazeDimensions {
-        public final int xMin, xMax;
-        public final int yMin, yMax;
+    public int getMazeXMin() {
 
-        private MazeDimensions(final int xMin,
-                               final int xMax,
-                               final int yMin,
-                               final int yMax) {
+        return BORDER_WIDTH;
+    }
 
-            this.xMin = xMin;
-            this.xMax = xMax;
-            this.yMin = yMin;
-            this.yMax = yMax;
-        }
+    public int getMazeXMax() {
+
+        return mazeXMax;
+    }
+
+    public int getMazeYMin() {
+
+        return BORDER_WIDTH;
+    }
+
+    public int getMazeYMax() {
+
+        return mazeYMax;
+    }
+
+    public int getPanelWidth() {
+
+        return getMazeXMin() + getMazeXMax();
+    }
+
+    public int getPanelHeight() {
+
+        return getMazeYMin() + getMazeYMax();
+    }
+
+    public int nodeLeft(final int node,
+                        final int columns) {
+
+        return getMazeXMin() + (node % columns) * NODE_WIDTH;
+    }
+
+    public int nodeTop(final int node,
+                       final int columns) {
+
+        return getMazeYMin() + (node / columns) * NODE_WIDTH;
+    }
+
+    public Dimension toJavaAwtDimension() {
+
+        return new Dimension(getPanelWidth(), getPanelHeight());
     }
 }

@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class MazeMakerTest {
 
     @Test
-    void getAdjacentShouldReturnCellsToTheLeftAndBelow() {
+    void getAdjacentShouldReturnNodesToTheLeftAndBelow() {
         final MazeConfig mazeConfig = new MazeConfig(4, 3, 0);
         final MazeMaker sut = new MazeMaker(mazeConfig);
 

@@ -1,13 +1,17 @@
 package ca.pringle.maze.ui;
 
-import ca.pringle.maze.logic.Edge;
-import ca.pringle.maze.logic.Path;
-import ca.pringle.maze.logic.SpecializedGraph;
-
-import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
 
+import javax.swing.JPanel;
+
+import ca.pringle.maze.logic.Edge;
+import ca.pringle.maze.logic.MazeConfig;
+import ca.pringle.maze.logic.Path;
+import ca.pringle.maze.logic.SpecializedGraph;
+
+import static ca.pringle.maze.ui.PanelDimensions.NODE_INSET;
+import static ca.pringle.maze.ui.PanelDimensions.NODE_WIDTH;
 import static ca.pringle.maze.util.Checks.check;
 
 final class MazePanel extends JPanel {
@@ -16,14 +20,17 @@ final class MazePanel extends JPanel {
     private Path startAndEndNodes;
     private int[] solution;
     private PanelDimensions panelDimensions;
+    private MazeConfig mazeConfig;
 
     public void update(final SpecializedGraph dag,
                        final Path startAndEndNodes,
-                       final PanelDimensions panelDimensions) {
+                       final PanelDimensions panelDimensions,
+                       final MazeConfig mazeConfig) {
 
         this.dag = check(dag).isNotNull();
         this.startAndEndNodes = check(startAndEndNodes).isNotNull();
         this.panelDimensions = check(panelDimensions).isNotNull();
+        this.mazeConfig = check(mazeConfig).isNotNull();
     }
 
     public void addSolution(final int[] solution) {
@@ -31,7 +38,7 @@ final class MazePanel extends JPanel {
     }
 
     public boolean hasSolution() {
-        return solution.length != 0;
+        return solution != null && solution.length != 0;
     }
 
     public PanelDimensions getPanelDimensions() {
@@ -70,7 +77,7 @@ final class MazePanel extends JPanel {
 
     private void paintSolution(final Graphics graphics) {
 
-        if (solution.length == 0) {
+        if (!hasSolution()) {
             return;
         }
 
@@ -96,74 +103,72 @@ final class MazePanel extends JPanel {
     private void addSquareNode(final Graphics graphics,
                                final int node) {
 
-        graphics.fillRect(calculateLeft(node), calculateTop(node), calculateWidth(), calculateHeight());
+        graphics.fillRect(
+                panelDimensions.nodeLeft(node, mazeConfig.getColumns()) + NODE_INSET,
+                panelDimensions.nodeTop(node, mazeConfig.getColumns()) + NODE_INSET,
+                NODE_WIDTH - 2 * NODE_INSET,
+                NODE_WIDTH - 2 * NODE_INSET
+        );
     }
 
     private void addSolutionNode(final Graphics graphics,
                                  final int lastNode,
                                  final int currentNode) {
 
-        if (lastNode - currentNode == -1) {
+        final int shortDimension = NODE_WIDTH - 2 * (NODE_INSET + 1);
+        final int longDimension = 2 * (NODE_WIDTH - NODE_INSET - 1);
+
+        if (isHorizontalEdge(currentNode, lastNode)) {
             graphics.fillRect(
-                    calculateLeft(lastNode) + 1, calculateTop(lastNode) + 1,
-                    3 * (calculateWidth() - 2), calculateHeight() - 2
+                    panelDimensions.nodeLeft(lastNode, mazeConfig.getColumns()) + NODE_INSET + 1,
+                    panelDimensions.nodeTop(lastNode, mazeConfig.getColumns()) + NODE_INSET + 1,
+                    longDimension,
+                    shortDimension
             );
-        } else if (lastNode - currentNode == 1) {
+
+        } else if (isHorizontalEdge(lastNode, currentNode)) {
             graphics.fillRect(
-                    calculateLeft(currentNode) + 1, calculateTop(currentNode) + 1,
-                    3 * (calculateWidth() - 2), calculateHeight() - 2
+                    panelDimensions.nodeLeft(currentNode, mazeConfig.getColumns()) + NODE_INSET + 1,
+                    panelDimensions.nodeTop(currentNode, mazeConfig.getColumns()) + NODE_INSET + 1,
+                    longDimension,
+                    shortDimension
             );
-        } else if (lastNode < currentNode) {
+
+        } else if (isVerticalEdge(currentNode, lastNode)) {
             graphics.fillRect(
-                    calculateLeft(lastNode) + 1, calculateTop(lastNode) + 1,
-                    calculateWidth() - 2, 3 * (calculateHeight() - 2)
+                    panelDimensions.nodeLeft(lastNode, mazeConfig.getColumns()) + NODE_INSET + 1,
+                    panelDimensions.nodeTop(lastNode, mazeConfig.getColumns()) + NODE_INSET + 1,
+                    shortDimension,
+                    longDimension
             );
+
         } else {
             graphics.fillRect(
-                    calculateLeft(currentNode) + 1, calculateTop(currentNode) + 1,
-                    calculateWidth() - 2, 3 * (calculateHeight() - 2)
+                    panelDimensions.nodeLeft(currentNode, mazeConfig.getColumns()) + NODE_INSET + 1,
+                    panelDimensions.nodeTop(currentNode, mazeConfig.getColumns()) + NODE_INSET + 1,
+                    shortDimension,
+                    longDimension
             );
         }
-    }
-
-    private int calculateLeft(final int node) {
-        return panelDimensions.mazeDimensions.xMin +
-                (node % panelDimensions.columns) * panelDimensions.pathWidth +
-                panelDimensions.pathWidth / 5;
-    }
-
-    private int calculateTop(final int node) {
-        return panelDimensions.mazeDimensions.yMin +
-                (node / panelDimensions.columns) * panelDimensions.pathWidth +
-                panelDimensions.pathWidth / 5;
-    }
-
-    private int calculateWidth() {
-        return 3 * panelDimensions.pathWidth / 5;
-    }
-
-    private int calculateHeight() {
-        return 3 * panelDimensions.pathWidth / 5;
     }
 
     private void paintFullGrid(final Graphics graphics) {
 
-        //the two drawLines above cover the x = 0 and x = d.cols case
-        for (int x = 0; x <= panelDimensions.columns; x++) {
+        for (int x = 0; x <= mazeConfig.getColumns(); x++) {
             graphics.drawLine(
-                    x * panelDimensions.pathWidth + panelDimensions.mazeDimensions.xMin,
-                    panelDimensions.mazeDimensions.yMin,
-                    x * panelDimensions.pathWidth + panelDimensions.mazeDimensions.xMin,
-                    panelDimensions.mazeDimensions.yMax
+                    panelDimensions.getMazeXMin() + x * NODE_WIDTH,
+                    panelDimensions.getMazeYMin(),
+                    panelDimensions.getMazeXMin() + x * NODE_WIDTH,
+                    panelDimensions.getMazeYMax()
             );
         }
 
-        for (int y = 0; y <= panelDimensions.rows; y++) {
+        for (int y = 0; y <= mazeConfig.getRows(); y++) {
             graphics.drawLine(
-                    panelDimensions.mazeDimensions.xMin,
-                    y * panelDimensions.pathWidth + panelDimensions.mazeDimensions.yMin,
-                    panelDimensions.mazeDimensions.xMax,
-                    y * panelDimensions.pathWidth + panelDimensions.mazeDimensions.yMin
+                    panelDimensions.getMazeXMin(),
+                    panelDimensions.getMazeYMin() + y * NODE_WIDTH,
+                    panelDimensions.getMazeXMax(),
+                    panelDimensions.getMazeYMin() + y * NODE_WIDTH
             );
         }
     }
@@ -171,18 +176,27 @@ final class MazePanel extends JPanel {
     private void paintErasedEdge(final Graphics graphics,
                                  final Edge edge) {
 
-        final int cellXMin = panelDimensions.mazeDimensions.xMin + (edge.node1 % panelDimensions.columns) * panelDimensions.pathWidth;
-        final int cellYMin = panelDimensions.mazeDimensions.yMin + (edge.node1 / panelDimensions.columns) * panelDimensions.pathWidth;
-        final int cellXMax = cellXMin + panelDimensions.pathWidth;
-        final int cellYMax = cellYMin + panelDimensions.pathWidth;
+        final int nodeXMin = panelDimensions.nodeLeft(edge.node1, mazeConfig.getColumns());
+        final int nodeYMin = panelDimensions.nodeTop(edge.node1, mazeConfig.getColumns());
+        final int nodeXMax = nodeXMin + NODE_WIDTH;
+        final int nodeYMax = nodeYMin + NODE_WIDTH;
 
-        final boolean isEdgeGoingRight = edge.node1 == (edge.node2 - 1);
-        final boolean isEdgeGoingDown = edge.node1 == (edge.node2 - panelDimensions.columns);
-
-        if (isEdgeGoingRight) {
-            graphics.drawLine(cellXMax, cellYMin + 1, cellXMax, cellYMax - 1);
-        } else if (isEdgeGoingDown) {
-            graphics.drawLine(cellXMin + 1, cellYMax, cellXMax - 1, cellYMax);
+        if (isHorizontalEdge(edge.node2, edge.node1)) {
+            graphics.drawLine(nodeXMax, nodeYMin + 1, nodeXMax, nodeYMax - 1);
+        } else if (isVerticalEdge(edge.node2, edge.node1)) {
+            graphics.drawLine(nodeXMin + 1, nodeYMax, nodeXMax - 1, nodeYMax);
         }
+    }
+
+    private boolean isHorizontalEdge(final int node1,
+                                     final int node2) {
+
+        return node1 - node2 == 1;
+    }
+
+    private boolean isVerticalEdge(final int node1,
+                                   final int node2) {
+
+        return node1 - node2 == mazeConfig.getColumns();
     }
 }

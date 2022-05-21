@@ -9,14 +9,16 @@ import static ca.pringle.maze.util.Checks.check;
  * node is given a number in ascending order, starting from the top
  * left corner, working down to the bottom right corner.
  * <p>
- * c   c   c
- * o   o   o
- * l   l   l
+ * <pre>
+ *        c   c   c
+ *        o   o   o
+ *        l   l   l
  * row  | 0 | 1 | 2 |
- * |---+---+---|
+ *      |---+---+---|
  * row  | 3 | 4 | 5 |
- * |---+---+---|
+ *      |---+---+---|
  * row  | 6 | 7 | 8 |
+ * </pre>
  */
 public final class MazeMaker {
 
@@ -58,7 +60,7 @@ public final class MazeMaker {
     }
 
     /**
-     * creates a list of all possible paths between cells of length 1
+     * creates a list of all possible paths between nodes of length 1
      */
     Edge[] initializeMaze() {
 
@@ -95,21 +97,21 @@ public final class MazeMaker {
      *
      *         |   |
      *      ---+---+---
-     *         | C | x
+     *         | N | x
      *      ---+---+---
      *         | x |
      *
-     * C corresponds to cellNumber in this method. The x's represent
-     * possible paths from C.
+     * N corresponds to node in this method. The x's represent
+     * possible paths from N.
      */
-    int[] getAdjacent(final int cellNumber) {
+    int[] getAdjacent(final int node) {
 
-        final boolean isCellBelow = cellNumber < (mazeConfig.getRows() - 1) * mazeConfig.getColumns();
-        final boolean isCellToTheRight = (cellNumber + 1) % mazeConfig.getColumns() != 0;
+        final boolean isNodeBelow = node < (mazeConfig.getRows() - 1) * mazeConfig.getColumns();
+        final boolean isNodeToTheRight = (node + 1) % mazeConfig.getColumns() != 0;
 
-        return isCellBelow && isCellToTheRight ? new int[] { cellNumber + mazeConfig.getColumns(), cellNumber + 1 } :
-               isCellBelow ? new int[] { cellNumber + mazeConfig.getColumns() } :
-               isCellToTheRight ? new int[] { cellNumber + 1 } :
+        return isNodeBelow && isNodeToTheRight ? new int[] { node + mazeConfig.getColumns(), node + 1 } :
+               isNodeBelow ? new int[] { node + mazeConfig.getColumns() } :
+               isNodeToTheRight ? new int[] { node + 1 } :
                new int[] {};
     }
 }

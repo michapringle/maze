@@ -1,35 +1,53 @@
 # Maze Making Program
 
 ## Introduction
-I wrote this program back in university days to experiment with algorithms to generate a random maze as 
-fast as asymptotically possible. The result is a program that generates a maze as an undirected acyclic 
-graph in `O(n×log(log n))` time. In this case, n is the number of edges in the original graph, which is 
-exactly `2 × rows × columns - rows - columns`. Recently I decided to polish up the U/I and bring it up 
+
+I wrote this program back in university days to experiment with algorithms to generate a random maze as
+fast as asymptotically possible. The result is a program that generates a maze as an undirected acyclic
+graph in `O(n×log(log n))` time. In this case, n is the number of edges in the original graph, which is
+exactly `2 × rows × columns - rows - columns`. Recently I decided to polish up the U/I and bring it up
 to snuff for consumption for the masses.
 
-
 ## Examples
-<sub><sup>_A 47 row x 72 column maze made with seed 2523584398559625748_</sub></sup>
-![Maze](47x72_s2523584398559625748.png)
 
-<sub><sup>_The same maze with the generated solution_</sub></sup>
-![Maze](47x72_s2523584398559625748_solved.png)
+#### A 35 row x 35 column maze made with seed -5336817546304463102
+<img align="left" width="350" height="350" src="35x35_s-5336817546304463102.png">
+<br clear="left"/>
 
-<sub><sup>_A 35 row x 35 column maze made with seed -5336817546304463102_</sub></sup>
-![Maze](35x35_s-5336817546304463102.png)
+#### The same maze with the generated solution
+<img align="left" width="350" height="350" src="35x35_s-5336817546304463102_solved.png">
+<br clear="left"/>
 
-<sub><sup>_The same maze with the generated solution_</sub></sup>
-![Maze](35x35_s-5336817546304463102_solved.png)
+---
+
+#### A 47 row x 72 column maze made with seed 2523584398559625748
+<img align="left" width="720" height="470" src="47x72_s2523584398559625748.png">
+<br clear="left"/>
+
+#### The same maze with the generated solution
+<img align="left"  width="720" height="470" src="47x72_s2523584398559625748_solved.png">
+<br clear="left"/>
+
+---
+
+#### A 40 row x 80 column maze made with seed -565727417695701993
+<img align="left"  width="800" height="400" src="40x80_s-565727417695701993.png">
+<br clear="left"/>
+
+#### The same maze with the generated solution
+<img align="left"  width="800" height="400" src="40x80_s-565727417695701993_solved.png">
+<br clear="left"/>
 
 ## Building and Running
+
 I decided to keep the generated code base small, so I have not used
-a bunch of libraries I would normally include, for example Guava, and Apache Commons. The 
+a bunch of libraries I would normally include, for example Guava, and Apache Commons. The
 generated fat-jar is under 30k in size.
 
 ### Requires
+
 * Java (compile: 11, run time: 11)
 * Maven 3.6.1
-
 
 ### Building
 To build the fat jar

@@ -1,22 +1,5 @@
 package ca.pringle.maze.ui;
 
-import ca.pringle.maze.logic.MazeConfig;
-import ca.pringle.maze.logic.MazeMaker;
-import ca.pringle.maze.logic.Path;
-import ca.pringle.maze.logic.PathFinder;
-import ca.pringle.maze.logic.SpecializedGraph;
-
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -29,6 +12,24 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
+
+import javax.imageio.ImageIO;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
+import ca.pringle.maze.logic.MazeConfig;
+import ca.pringle.maze.logic.MazeMaker;
+import ca.pringle.maze.logic.Path;
+import ca.pringle.maze.logic.PathFinder;
+import ca.pringle.maze.logic.SpecializedGraph;
 
 public final class MazeDrawer extends JFrame {
 
@@ -85,25 +86,20 @@ public final class MazeDrawer extends JFrame {
 
         new Thread(() -> {
             final MazeMaker mazeMaker = new MazeMaker(mazeConfig);
-            final PanelDimensions panelDimensions = new PanelDimensions(
-                    mazeConfig.getRows(),
-                    mazeConfig.getColumns(),
-                    15,
-                    15
-            );
+            final PanelDimensions panelDimensions = PanelDimensions.calculateMazeDimensionsFrom(mazeConfig.getRows(), mazeConfig.getColumns());
 
             final SpecializedGraph dag = mazeMaker.generateDag();
             final Path startAndEndNodes = new PathFinder().findLongestPath(dag, mazeConfig);
             solution = new PathFinder().findSolution(dag, startAndEndNodes.fromNode, startAndEndNodes.toNode, mazeConfig);
             // do not show the solution until it is requested, make sure the old one is not displayed
             mazePanel.addSolution(new int[0]);
-            mazePanel.update(dag, startAndEndNodes, panelDimensions);
-            mazePanel.setPreferredSize(panelDimensions.toDimension());
+            mazePanel.update(dag, startAndEndNodes, panelDimensions, mazeConfig);
+            mazePanel.setPreferredSize(panelDimensions.toJavaAwtDimension());
             mazePanel.repaint();
 
             setSize(
-                    Math.min(1200, panelDimensions.panelWidth + 10),
-                    Math.min(700, panelDimensions.panelHeight + 60)
+                    Math.min(1200, panelDimensions.getPanelWidth() + 5),
+                    Math.min(700, panelDimensions.getPanelHeight() + getInsets().top + getJMenuBar().getHeight() + 5)
             );
 
             SwingUtilities.invokeLater(() -> {
@@ -148,8 +144,8 @@ public final class MazeDrawer extends JFrame {
             try {
                 mazePanel.getGraphics().dispose();
                 final BufferedImage image = new BufferedImage(
-                        mazePanel.getPanelDimensions().panelWidth,
-                        mazePanel.getPanelDimensions().panelHeight,
+                        mazePanel.getPanelDimensions().getPanelWidth(),
+                        mazePanel.getPanelDimensions().getPanelHeight(),
                         BufferedImage.TYPE_INT_ARGB
                 );
                 final Graphics2D graphics = image.createGraphics();
@@ -163,7 +159,7 @@ public final class MazeDrawer extends JFrame {
                         JOptionPane.INFORMATION_MESSAGE
                 );
 
-            } catch (IOException handled) {
+            } catch (IOException | RuntimeException handled) {
                 JOptionPane.showMessageDialog(
                         null,
                         "Error saving file to " + path,
@@ -283,7 +279,7 @@ public final class MazeDrawer extends JFrame {
         );
 
         if (confirmation == JOptionPane.CANCEL_OPTION || confirmation == JOptionPane.CLOSED_OPTION) {
-            return null;
+            return mazeConfig;
         }
 
         try {
@@ -304,7 +300,9 @@ public final class MazeDrawer extends JFrame {
         }
     }
 
-    private String getInfoMessage(final MazeConfig mazeConfig, final int solutionLength) {
+    private String getInfoMessage(final MazeConfig mazeConfig,
+                                  final int solutionLength) {
+
         return String.format(
                 "A %s row x %s column maze, made with seed %s.\n" +
                         "Maze generated in %s milliseconds, " +

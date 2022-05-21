@@ -50,7 +50,6 @@ public final class Checks<T> {
         return isTrueAnd(condition, errorMessageTemplate, errorMessageArgs).get();
     }
 
-
     public Checks<T> isTrueAnd(final boolean expression,
                                final String errorMessageTemplate,
                                final Object... errorMessageArgs) {
@@ -62,14 +61,12 @@ public final class Checks<T> {
         throw new IllegalArgumentException(String.format(errorMessageTemplate, errorMessageArgs));
     }
 
-
     public T isGreaterThan(final long number,
                            final String errorMessageTemplate,
                            final Object... errorMessageArgs) {
 
         return isGreaterThanAnd(number, errorMessageTemplate, errorMessageArgs).get();
     }
-
 
     public Checks<T> isGreaterThanAnd(final long number,
                                       final String errorMessageTemplate,
@@ -86,7 +83,6 @@ public final class Checks<T> {
         throw new IllegalArgumentException(String.format(errorMessageTemplate, errorMessageArgs));
     }
 
-
     public T isAnyOf(final List<T> validValues) {
 
         return isAnyOfAnd(validValues).get();
@@ -99,12 +95,10 @@ public final class Checks<T> {
         return isAnyOfAnd(validValues, errorMessageTemplate, errorMessageArgs).get();
     }
 
-
     public Checks<T> isAnyOfAnd(final List<T> validValues) {
 
         return isAnyOfAnd(validValues, "Invalid value: %s, accepted values: %s", reference, Arrays.toString(validValues.toArray()));
     }
-
 
     public Checks<T> isAnyOfAnd(final List<T> validValues,
                                 final String errorMessageTemplate,
