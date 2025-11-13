@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
+import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -21,12 +22,15 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import ca.pringle.maze.logic.DepthFirstAlgorithm;
+import ca.pringle.maze.logic.DisjointSetAlgorithm;
+import ca.pringle.maze.logic.MazeAlgorithm;
 import ca.pringle.maze.logic.MazeConfig;
-import ca.pringle.maze.logic.MazeMaker;
 import ca.pringle.maze.logic.Path;
 import ca.pringle.maze.logic.PathFinder;
 import ca.pringle.maze.logic.SpecializedGraph;
@@ -34,6 +38,9 @@ import ca.pringle.maze.logic.SpecializedGraph;
 public final class MazeDrawer extends JFrame {
 
     static final String NEW = "New...";
+    static final String ALGORITHM = "Algorithm";
+    static final String DISJOINT_SET = "Disjoint Set";
+    static final String DEPTH_FIRST = "Depth First";
     static final String SAVE = "Save";
     static final String EXIT = "Exit";
     static final String TOGGLE_SOLUTION = "Toggle Solution";
@@ -42,15 +49,20 @@ public final class MazeDrawer extends JFrame {
 
     private final MazePanel mazePanel;
     private JMenuItem newMenuItem;
+    private JRadioButtonMenuItem disjointRadioButtonMenuItem;
+    private JRadioButtonMenuItem depthFirstRadioButtonMenuItem;
     private JMenuItem saveMenuItem;
     private JMenuItem solveMenuItem;
     private JMenuItem infoMenuItem;
+
+    private MazeAlgorithm mazeAlgorithm;
     private MazeConfig mazeConfig;
     private int[] solution;
 
     public MazeDrawer() {
 
         mazePanel = new MazePanel();
+        mazeAlgorithm = new DisjointSetAlgorithm();
     }
 
     public void init() {
@@ -73,6 +85,16 @@ public final class MazeDrawer extends JFrame {
         repaint();
     }
 
+    void selectDisjointSetAlgorithm() {
+
+        mazeAlgorithm = new DisjointSetAlgorithm();
+    }
+
+    void selectDepthFirstAlgorithm() {
+
+        mazeAlgorithm = new DepthFirstAlgorithm();
+    }
+
     void generateNewMaze() {
         mazeConfig = getNewMazeConfigFromUser();
         if (mazeConfig == null) {
@@ -85,12 +107,20 @@ public final class MazeDrawer extends JFrame {
         });
 
         new Thread(() -> {
-            final MazeMaker mazeMaker = new MazeMaker(mazeConfig);
             final PanelDimensions panelDimensions = PanelDimensions.calculateMazeDimensionsFrom(mazeConfig.getRows(), mazeConfig.getColumns());
 
-            final SpecializedGraph dag = mazeMaker.generateDag();
-            final Path startAndEndNodes = new PathFinder().findLongestPath(dag, mazeConfig);
-            solution = new PathFinder().findSolution(dag, startAndEndNodes.fromNode, startAndEndNodes.toNode, mazeConfig);
+            mazeConfig.getMazeGenerationTimer().start();
+            final SpecializedGraph dag = mazeAlgorithm.generateMaze(mazeConfig);
+            mazeConfig.getMazeGenerationTimer().start();
+
+            mazeConfig.getPathGenerationTimer().start();
+            final Path startAndEndNodes = new PathFinder().findLongestPath(dag);
+            mazeConfig.getPathGenerationTimer().stop();
+
+            mazeConfig.getSolutionGenerationTimer().start();
+            solution = new PathFinder().findSolution(dag, startAndEndNodes.fromNode, startAndEndNodes.toNode);
+            mazeConfig.getSolutionGenerationTimer().stop();
+
             // do not show the solution until it is requested, make sure the old one is not displayed
             mazePanel.addSolution(new int[0]);
             mazePanel.update(dag, startAndEndNodes, panelDimensions, mazeConfig);
@@ -200,6 +230,8 @@ public final class MazeDrawer extends JFrame {
     private void setAllMenuOptions(final boolean value) {
 
         newMenuItem.setEnabled(value);
+        disjointRadioButtonMenuItem.setEnabled(value);
+        depthFirstRadioButtonMenuItem.setEnabled(value);
         saveMenuItem.setEnabled(value);
         solveMenuItem.setEnabled(value);
         infoMenuItem.setEnabled(value);
@@ -216,6 +248,23 @@ public final class MazeDrawer extends JFrame {
         newMenuItem.setEnabled(true);
         newMenuItem.addActionListener(menuListener);
         fileMenu.add(newMenuItem);
+
+        final JMenu algorithmMenu = new JMenu(ALGORITHM);
+        fileMenu.add(algorithmMenu);
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+
+        disjointRadioButtonMenuItem = new JRadioButtonMenuItem(DISJOINT_SET, true);
+        disjointRadioButtonMenuItem.setEnabled(true);
+        disjointRadioButtonMenuItem.addActionListener(menuListener);
+        buttonGroup.add(disjointRadioButtonMenuItem);
+        algorithmMenu.add(disjointRadioButtonMenuItem);
+
+        depthFirstRadioButtonMenuItem = new JRadioButtonMenuItem(DEPTH_FIRST);
+        depthFirstRadioButtonMenuItem.setEnabled(true);
+        depthFirstRadioButtonMenuItem.addActionListener(menuListener);
+        buttonGroup.add(depthFirstRadioButtonMenuItem);
+        algorithmMenu.add(depthFirstRadioButtonMenuItem);
 
         solveMenuItem = new JMenuItem(TOGGLE_SOLUTION, KeyEvent.VK_S);
         solveMenuItem.setEnabled(false);

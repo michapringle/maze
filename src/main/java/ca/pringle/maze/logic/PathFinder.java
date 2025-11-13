@@ -7,10 +7,8 @@ public final class PathFinder {
 
     public int[] findSolution(final SpecializedGraph graph,
                               final int startNode,
-                              final int endNode,
-                              final MazeConfig mazeConfig) {
+                              final int endNode) {
 
-        mazeConfig.getSolutionGenerationTimer().start();
 
         final SpecializedGraph graphCopy = SpecializedGraph.copy(graph);
         final Deque<Integer> stack = new ArrayDeque<>();
@@ -30,9 +28,7 @@ public final class PathFinder {
             // end condition
             if (followNodeEdges.contains(endNode)) {
                 stack.push(endNode);
-                int[] solution = stack.stream().mapToInt(i -> i).toArray();
-                mazeConfig.getSolutionGenerationTimer().stop();
-                return solution;
+                return stack.stream().mapToInt(i -> i).toArray();
             }
 
             // follow next edge
@@ -51,16 +47,11 @@ public final class PathFinder {
      * <p>
      * Runs in O(n) time
      */
-    public Path findLongestPath(final SpecializedGraph graph,
-                                final MazeConfig mazeConfig) {
-
-        mazeConfig.getPathGenerationTimer().start();
+    public Path findLongestPath(final SpecializedGraph graph) {
 
         // each call below takes O(n) time
         final int firstNode = longestPath(graph, 0);
         final int secondNode = longestPath(graph, firstNode);
-
-        mazeConfig.getPathGenerationTimer().stop();
 
         return new Path(firstNode, secondNode);
     }

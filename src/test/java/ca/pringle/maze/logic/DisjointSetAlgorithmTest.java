@@ -14,33 +14,35 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-final class MazeMakerTest {
+final class DisjointSetAlgorithmTest {
 
     @Test
     void getAdjacentShouldReturnNodesToTheLeftAndBelow() {
         final MazeConfig mazeConfig = new MazeConfig(4, 3, 0);
-        final MazeMaker sut = new MazeMaker(mazeConfig);
+        final DisjointSetAlgorithm sut = new DisjointSetAlgorithm();
+        int rows = mazeConfig.getRows();
+        int columns = mazeConfig.getColumns();
 
-        assertArrayEquals(new int[] { 3, 1 }, sut.getAdjacent(0));
-        assertArrayEquals(new int[] { 4, 2 }, sut.getAdjacent(1));
-        assertArrayEquals(new int[] { 5 }, sut.getAdjacent(2));
-        assertArrayEquals(new int[] { 6, 4 }, sut.getAdjacent(3));
-        assertArrayEquals(new int[] { 7, 5 }, sut.getAdjacent(4));
-        assertArrayEquals(new int[] { 8 }, sut.getAdjacent(5));
-        assertArrayEquals(new int[] { 9, 7 }, sut.getAdjacent(6));
-        assertArrayEquals(new int[] { 10, 8 }, sut.getAdjacent(7));
-        assertArrayEquals(new int[] { 11 }, sut.getAdjacent(8));
-        assertArrayEquals(new int[] { 10 }, sut.getAdjacent(9));
-        assertArrayEquals(new int[] { 11 }, sut.getAdjacent(10));
-        assertArrayEquals(new int[] {}, sut.getAdjacent(11));
+        assertArrayEquals(new int[]{3, 1}, sut.getAdjacent(0, rows, columns));
+        assertArrayEquals(new int[]{4, 2}, sut.getAdjacent(1, rows, columns));
+        assertArrayEquals(new int[]{5}, sut.getAdjacent(2, rows, columns));
+        assertArrayEquals(new int[]{6, 4}, sut.getAdjacent(3, rows, columns));
+        assertArrayEquals(new int[]{7, 5}, sut.getAdjacent(4, rows, columns));
+        assertArrayEquals(new int[]{8}, sut.getAdjacent(5, rows, columns));
+        assertArrayEquals(new int[]{9, 7}, sut.getAdjacent(6, rows, columns));
+        assertArrayEquals(new int[]{10, 8}, sut.getAdjacent(7, rows, columns));
+        assertArrayEquals(new int[]{11}, sut.getAdjacent(8, rows, columns));
+        assertArrayEquals(new int[]{10}, sut.getAdjacent(9, rows, columns));
+        assertArrayEquals(new int[]{11}, sut.getAdjacent(10, rows, columns));
+        assertArrayEquals(new int[]{}, sut.getAdjacent(11, rows, columns));
     }
 
     @Test
     void initializeMazeShouldWork() {
         final MazeConfig mazeConfig = new MazeConfig(4, 3, 0);
-        final MazeMaker sut = new MazeMaker(mazeConfig);
+        final DisjointSetAlgorithm sut = new DisjointSetAlgorithm();
 
-        final Edge[] actual = sut.initializeMaze();
+        final Edge[] actual = sut.initializeMaze(mazeConfig);
 
         assertEquals(17, actual.length);
         assertEquals(new Edge(0, 3), actual[0]);
@@ -65,12 +67,12 @@ final class MazeMakerTest {
     @Test
     void randomizeEdgesShouldRandomizeAndNotAlterEdges() {
         final MazeConfig mazeConfig = new MazeConfig(4, 3, 0);
-        final MazeMaker sut = new MazeMaker(mazeConfig);
+        final DisjointSetAlgorithm sut = new DisjointSetAlgorithm();
 
-        final Edge[] edges = sut.initializeMaze();
+        final Edge[] edges = sut.initializeMaze(mazeConfig);
         final Edge[] actual = edges.clone();
 
-        sut.randomizeEdges(actual);
+        sut.randomizeEdges(mazeConfig.getNewSeededRandom(), actual);
 
         // verify the edges are not altered
         assertEquals(17, edges.length);
@@ -86,22 +88,22 @@ final class MazeMakerTest {
     }
 
     @Test
-    void generateDagShouldCreateValidDag() {
+    void generateMazeShouldCreateValidDag() {
 
         {
-            final SpecializedGraph actual = new MazeMaker(MAZE_2X2_S0.config()).generateDag();
+            final SpecializedGraph actual = new DisjointSetAlgorithm().generateMaze(MAZE_2X2_S0.config());
             assertEquals(MAZE_2X2_S0.graph(), actual);
         }
         {
-            final SpecializedGraph actual = new MazeMaker(MAZE_3X4_S0.config()).generateDag();
+            final SpecializedGraph actual = new DisjointSetAlgorithm().generateMaze(MAZE_3X4_S0.config());
             assertEquals(MAZE_3X4_S0.graph(), actual);
         }
         {
-            final SpecializedGraph actual = new MazeMaker(MAZE_6X6_S0.config()).generateDag();
+            final SpecializedGraph actual = new DisjointSetAlgorithm().generateMaze(MAZE_6X6_S0.config());
             assertEquals(MAZE_6X6_S0.graph(), actual);
         }
         {
-            final SpecializedGraph actual = new MazeMaker(MAZE_6X6_S1.config()).generateDag();
+            final SpecializedGraph actual = new DisjointSetAlgorithm().generateMaze(MAZE_6X6_S1.config());
             assertEquals(MAZE_6X6_S1.graph(), actual);
         }
     }

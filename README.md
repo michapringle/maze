@@ -46,7 +46,7 @@ generated fat-jar is under 30k in size.
 
 ### Requires
 
-* Java (compile: 11, run time: 11)
+* Java (compile: 23, run time: 23)
 * Maven 3.6.1
 
 ### Building
@@ -56,8 +56,8 @@ mvn clean package assembly:single
 ```
 look for `target/maze-1.0-SNAPSHOT-jar-with-dependencies.jar`
 
-or download a java 11 compiled 
-<a href="https://github.com/michapringle/maze/blob/master/maze-11.jar" download>maze-11.jar</a>. 
+or download a java 23 compiled 
+<a href="https://github.com/michapringle/maze/blob/master/maze-23.jar" download>maze-23.jar</a>. 
 Look for the download button on the right.
 
 

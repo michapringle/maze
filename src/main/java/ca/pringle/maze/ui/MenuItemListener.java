@@ -17,6 +17,12 @@ final class MenuItemListener implements ActionListener {
             case MazeDrawer.NEW:
                 mazeDrawer.generateNewMaze();
                 break;
+            case MazeDrawer.DISJOINT_SET:
+                mazeDrawer.selectDisjointSetAlgorithm();
+                break;
+            case MazeDrawer.DEPTH_FIRST:
+                mazeDrawer.selectDepthFirstAlgorithm();
+                break;
             case MazeDrawer.TOGGLE_SOLUTION:
                 mazeDrawer.toggleMazeSolution();
                 break;
